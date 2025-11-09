@@ -1,4 +1,6 @@
+import atexit
 import logging
+import subprocess
 
 import matplotlib
 import tkinter as tk
@@ -14,6 +16,23 @@ logging.basicConfig(
     style="{",
     handlers=[logging.StreamHandler()],
 )
+
+
+def start_server() -> subprocess.Popen:
+    process = subprocess.Popen(["python", "pyinterface/server.py"])
+    logging.info("Started server subprocess")
+
+    # Required to stop the process running in the background after termination
+    def cleanup():
+        process.kill()
+        logging.info("Killed server subprocess")
+
+    atexit.register(cleanup)
+
+    return process
+
+
+server = start_server()
 
 window = tk.Tk()
 window.title("Animation Test")
