@@ -6,6 +6,7 @@ import matplotlib
 import tkinter as tk
 
 from livegraph import LiveGraph
+from livemap import LiveMap
 
 matplotlib.use("TkAgg")
 
@@ -44,5 +45,8 @@ graph0.grid(column=0, row=0)
 
 graph1 = LiveGraph(window, "Graph 1")
 graph1.grid(column=0, row=1)
+
+map = LiveMap(window, "My LiveMap")
+map.grid(column=1, row=0)
 
 window.mainloop()
