@@ -1,5 +1,7 @@
-import logging
 import socketserver
+from typing import Dict
+
+from datahandler import DataHandler
 
 
 class UDPHandler(socketserver.BaseRequestHandler):
@@ -10,7 +12,20 @@ class UDPHandler(socketserver.BaseRequestHandler):
         socket.sendto(data.upper(), self.client_address)
 
 
-def server() -> socketserver.UDPServer:
-    logging.info("Started server subprocess")
-    HOST, PORT = "localhost", 9999
-    return socketserver.UDPServer((HOST, PORT), UDPHandler)
+class Server:
+    HOST = "localhost"
+    PORT = 9999
+
+    def __init__(self) -> None:
+        self.server = socketserver.UDPServer((self.HOST, self.PORT), UDPHandler)
+        self.handlers: Dict[str, DataHandler] = {}
+
+    def serve(self):
+        self.server.serve_forever()
+
+    def shutdown(self):
+        self.server.shutdown()
+        self.server.server_close()
+
+    def register(self, handler: DataHandler, tag: str):
+        self.handlers[tag] = handler

@@ -4,7 +4,7 @@ import threading
 import matplotlib
 
 from window import Window
-import server as sv
+from server import Server
 
 matplotlib.use("TkAgg")
 
@@ -16,15 +16,15 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
-server = sv.server()
-thread = threading.Thread(target=server.serve_forever)
+server = Server()
+thread = threading.Thread(target=server.serve)
+logging.info("Starting server...")
 thread.start()
 
 
 def on_close():
     logging.info("Shutting down server...")
     server.shutdown()
-    server.server_close()
     thread.join()
     window.root.destroy()
 
