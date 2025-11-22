@@ -19,7 +19,7 @@ logging.basicConfig(
 
 
 def start_server() -> subprocess.Popen:
-    process = subprocess.Popen(["python", "pyinterface/server.py"])
+    process = subprocess.Popen(["python", "src/server.py"])
     logging.info("Started server subprocess")
 
     # Required to stop the process running in the background after termination
