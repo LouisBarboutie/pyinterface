@@ -1,11 +1,10 @@
-import atexit
 import logging
-import subprocess
+import threading
 
 import matplotlib
-import tkinter as tk
 
 from window import Window
+import server as sv
 
 matplotlib.use("TkAgg")
 
@@ -17,22 +16,19 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
-
-def start_server() -> subprocess.Popen:
-    process = subprocess.Popen(["python", "src/server.py"])
-    logging.info("Started server subprocess")
-
-    # Required to stop the process running in the background after termination
-    def cleanup():
-        process.kill()
-        logging.info("Killed server subprocess")
-
-    atexit.register(cleanup)
-
-    return process
+server = sv.server()
+thread = threading.Thread(target=server.serve_forever)
+thread.start()
 
 
-server = start_server()
+def on_close():
+    logging.info("Shutting down server...")
+    server.shutdown()
+    server.server_close()
+    thread.join()
+    window.root.destroy()
+
 
 window = Window()
+window.root.protocol("WM_DELETE_WINDOW", on_close)
 window.main()

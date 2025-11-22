@@ -1,3 +1,4 @@
+import logging
 import socketserver
 
 
@@ -9,7 +10,7 @@ class UDPHandler(socketserver.BaseRequestHandler):
         socket.sendto(data.upper(), self.client_address)
 
 
-if __name__ == "__main__":
+def server() -> socketserver.UDPServer:
+    logging.info("Started server subprocess")
     HOST, PORT = "localhost", 9999
-    with socketserver.UDPServer((HOST, PORT), UDPHandler) as server:
-        server.serve_forever()
+    return socketserver.UDPServer((HOST, PORT), UDPHandler)
