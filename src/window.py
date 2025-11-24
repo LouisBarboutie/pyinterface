@@ -21,7 +21,7 @@ class Window:
         self.graph1 = LiveGraph(self.root, "Graph 1")
         self.graph1.grid(column=0, row=1)
 
-        self.map = LiveMap(self.root, "My LiveMap")
+        self.map = LiveMap(self.root, "My LiveMap", LiveHandler())
         self.map.grid(column=1, row=0)
 
         self.text = LiveText(self.root, LiveHandler())
