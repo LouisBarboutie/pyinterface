@@ -1,6 +1,7 @@
 import logging
-from typing import Iterable
+from typing import Iterable, List
 
+from matplotlib import markers
 from matplotlib.animation import FuncAnimation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -21,6 +22,7 @@ class LiveMap(tk.Frame):
         self.figure = Figure()
         self.figure.suptitle(title)
         self.axes = self.figure.subplots()
+        self.axes.set_aspect("equal")
 
         self.map = Basemap(
             llcrnrlon=3,
@@ -33,16 +35,12 @@ class LiveMap(tk.Frame):
         self.map.drawcoastlines(linewidth=0.25)
         self.map.drawcountries(linewidth=0.25)
 
-        self.lon_initial = self.map.llcrnrlon
-        self.lat_initial = (self.map.latmax + self.map.latmin) / 2
-        self.lon = self.lon_initial
-        self.lat = self.lat_initial
-        x, y = self.map(self.lon_initial, self.lat_initial)
-        self.scatter = self.map.scatter(x, y)
+        self.lon_history: List[float] = []
+        self.lat_history: List[float] = []
+        self.x_history: List[float] = []
+        self.y_history: List[float] = []
 
-        self.x = np.zeros((10,))
-        self.y = np.zeros((10,))
-        self.line = self.axes.plot(self.x, self.y)[0]
+        self.line = self.axes.plot(self.x_history, self.y_history, marker="o")[0]
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self)
         self.canvas.get_tk_widget().grid(column=0, row=0)
@@ -56,17 +54,15 @@ class LiveMap(tk.Frame):
 
     def update(self) -> None:
         while not self.handler.queue.empty():
-            self.lon, self.lat = self.handler.queue.get()
-            x, y = self.map(self.lon, self.lat)
-            self.x[:-1] = self.x[1:]
-            self.y[:-1] = self.y[1:]
-            self.x[-1] = x
-            self.y[-1] = y
+            new_lon, new_lat = self.handler.queue.get()
+            new_x, new_y = self.map(new_lon, new_lat)
+            self.x_history.append(new_x)
+            self.y_history.append(new_y)
+            self.lon_history.append(new_lon)
+            self.lat_history.append(new_lat)
 
     def animate(self, frame) -> Iterable:
-
         self.update()
-        self.scatter.set_offsets(np.column_stack([self.x, self.y]))
-        self.line.set_data(self.x, self.y)
+        self.line.set_data(self.x_history, self.y_history)
 
-        return [self.scatter, self.line]
+        return [self.line]
