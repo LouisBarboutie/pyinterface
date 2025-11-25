@@ -1,24 +1,38 @@
 import logging
+from collections import deque
+from typing import List, Deque
+
 import tkinter as tk
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.animation import FuncAnimation
-import numpy as np
+
+from datahandler import DataHandler
 
 
 class LiveGraph(tk.Frame):
 
-    def __init__(self, parent: tk.Misc, title: str):
+    def __init__(self, parent: tk.Misc, title: str, handler: DataHandler):
         self.parent = parent
         super().__init__(parent)
+
+        self.handler = handler
 
         self.figure = Figure()
         self.figure.suptitle(title)
         self.axes = self.figure.subplots()
-        self.x = np.linspace(0, 10, 25)
-        self.y = np.sin(self.x)
-        self.line = self.axes.plot(self.x, self.y)[0]
+
+        self.x_history: List[float] = []
+        self.y_history: List[float] = []
+
+        self.x_display: Deque[float] = deque(maxlen=25)
+        self.y_display: Deque[float] = deque(maxlen=25)
+
+        self.line = self.axes.plot(self.x_display, self.y_display, marker="o")[0]
+
         self.canvas = FigureCanvasTkAgg(self.figure, master=self)
+        self.canvas.get_tk_widget().grid(column=0, row=0)
+
         self.animation = FuncAnimation(
             self.figure,
             self.animate,
@@ -26,48 +40,23 @@ class LiveGraph(tk.Frame):
             cache_frame_data=False,
         )
 
-        self.graph_frame = tk.Frame(master=self)
-        self.button_frame = tk.Frame(master=self)
-        self.canvas.get_tk_widget().grid(column=0, row=0)
-        self.button_frame.grid(column=1, row=0)
+    def update(self) -> None:
+        while not self.handler.queue.empty():
+            new_x = len(self.x_history)
+            new_y = self.handler.queue.get()
 
-        self.start_button = tk.Button(
-            self.button_frame,
-            text="Start",
-            command=self.start,
-        )
-        self.start_button.pack()
+            self.x_history.append(new_x)
+            self.y_history.append(new_y)
 
-        self.stop_button = tk.Button(
-            self.button_frame,
-            text="Stop",
-            command=self.stop,
-        )
-        self.stop_button.pack()
+            # Deque takes care of removing the extra elements
+            self.x_display.append(new_x)
+            self.y_display.append(new_y)
 
-        self.save_button = tk.Button(
-            self.button_frame,
-            text="Save",
-            command=self.save,
-        )
-        self.save_button.pack()
+    def animate(self, frame: int):
+        self.update()
+        self.line.set_data(self.x_display, self.y_display)
 
-    def animate(self, frame):
-        self.x += 1
-        self.y = np.sin(self.x)
-        self.line.set_ydata(self.y)
+        self.axes.relim()
+        self.axes.autoscale_view()
 
         return [self.line]
-
-    def start(self):
-        self.animation.resume()
-
-    def stop(self):
-        self.animation.pause()
-
-    def save(self):
-        x = self.line.get_xdata()
-        y = self.line.get_ydata()
-        logging.info(f"Saving data for LiveGraph: {self.figure.get_suptitle()}")
-        logging.info(f"{x=}")
-        logging.info(f"{y=}")

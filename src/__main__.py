@@ -34,5 +34,6 @@ window.root.protocol("WM_DELETE_WINDOW", on_close)
 
 server.register(window.text.handler, "text")
 server.register(window.map.handler, "map")
+server.register(window.graph0.handler, "data")
 
 window.main()

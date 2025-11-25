@@ -37,6 +37,8 @@ class UDPHandler(socketserver.BaseRequestHandler):
             case "map":
                 lon, lat = map(float, message.split())
                 return (lon, lat)
+            case "data":
+                return float(message)
             case _:
                 raise UnknownTelemetryTypeSpecifier(
                     f"Telemetry type specifier '{key}' unknown!"
