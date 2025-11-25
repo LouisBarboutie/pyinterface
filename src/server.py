@@ -13,10 +13,14 @@ class UnknownTelemetryTypeSpecifier(Exception):
 
 class UDPHandler(socketserver.BaseRequestHandler):
     def handle(self) -> None:
-        data = self.request[0].strip()
+        data = self.request[0]
         socket = self.request[1]
 
-        key, message = data.decode().split(maxsplit=1)
+        if len(data) == self.server.max_packet_size:
+            message = f"Received packet has server max packet size, some data might be truncated!"
+            logging.warning(message)
+
+        key, message = data.strip().decode().split(maxsplit=1)
         try:
             message = self.parse(key, message)
             self.server.handlers.get(key).handle(message)
