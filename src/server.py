@@ -2,6 +2,7 @@ import logging
 import socketserver
 from typing import Dict
 
+from bus import Bus
 from datahandler import DataHandler
 
 
@@ -23,20 +24,22 @@ class UDPHandler(socketserver.BaseRequestHandler):
         key, message = data.strip().decode().split(maxsplit=1)
         try:
             message = self.parse(key, message)
-            self.server.handlers.get(key).handle(message)
         except Exception as e:
             logging.warning(f"Error while parsing incoming request: {e}")
+
+        self.server.bus.publish(key, message)
 
         print(f"{self.client_address[0]} wrote: ", data, sep="\n")
         socket.sendto(data.upper(), self.client_address)
 
     def parse(self, key: str, message: str):
+
         match key:
             case "text":
-                return message
+                parsed_message = message
             case "map":
                 lon, lat = map(float, message.split())
-                return (lon, lat)
+                parsed_message = (lon, lat)
             case "data":
                 return float(message)
             case _:
@@ -44,14 +47,16 @@ class UDPHandler(socketserver.BaseRequestHandler):
                     f"Telemetry type specifier '{key}' unknown!"
                 )
 
+        return parsed_message
+
 
 class Server:
     HOST = "localhost"
     PORT = 9999
 
-    def __init__(self) -> None:
+    def __init__(self, bus: Bus) -> None:
         self.server = socketserver.UDPServer((self.HOST, self.PORT), UDPHandler)
-        self.server.handlers: Dict[str, DataHandler] = {}
+        self.server.bus = bus
 
     def serve(self):
         self.server.serve_forever()
@@ -59,6 +64,3 @@ class Server:
     def shutdown(self):
         self.server.shutdown()
         self.server.server_close()
-
-    def register(self, handler: DataHandler, tag: str):
-        self.server.handlers[tag] = handler

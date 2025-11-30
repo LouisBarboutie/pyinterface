@@ -1,23 +1,20 @@
-import logging
 from typing import Iterable, List
 
-from matplotlib import markers
 from matplotlib.animation import FuncAnimation
+from matplotlib.artist import Artist
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from mpl_toolkits.basemap import Basemap
-import numpy as np
 import tkinter as tk
 
-from datahandler import DataHandler
+from subscriber import Subscriber
 
 
-class LiveMap(tk.Frame):
-    def __init__(self, parent: tk.Misc, title: str, handler: DataHandler):
-        self.parent = parent
-        super().__init__(parent)
+class LiveMap(tk.Frame, Subscriber):
 
-        self.handler = handler
+    def __init__(self, parent: tk.Misc, title: str) -> None:
+        tk.Frame.__init__(self, parent)
+        Subscriber.__init__(self, tuple)
 
         self.figure = Figure()
         self.figure.suptitle(title)
@@ -52,17 +49,14 @@ class LiveMap(tk.Frame):
             cache_frame_data=False,
         )
 
-    def update(self) -> None:
-        while not self.handler.queue.empty():
-            new_lon, new_lat = self.handler.queue.get()
-            new_x, new_y = self.map(new_lon, new_lat)
-            self.x_history.append(new_x)
-            self.y_history.append(new_y)
-            self.lon_history.append(new_lon)
-            self.lat_history.append(new_lat)
-
-    def animate(self, frame) -> Iterable:
-        self.update()
+    def animate(self, frame) -> Iterable[Artist]:
         self.line.set_data(self.x_history, self.y_history)
-
         return [self.line]
+
+    def handle(self, message: tuple[float, float]) -> None:
+        new_lon, new_lat = message
+        new_x, new_y = self.map(new_lon, new_lat)
+        self.x_history.append(new_x)
+        self.y_history.append(new_y)
+        self.lon_history.append(new_lon)
+        self.lat_history.append(new_lat)

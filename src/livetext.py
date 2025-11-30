@@ -1,26 +1,18 @@
 import tkinter as tk
 
-from datahandler import DataHandler
+from subscriber import Subscriber
 
 
-class LiveText(tk.Frame):
+class LiveText(tk.Frame, Subscriber):
 
-    def __init__(self, parent: tk.Misc, handler: DataHandler):
+    def __init__(self, parent: tk.Misc):
         self.parent = parent
-        super().__init__(parent)
-
-        self.handler = handler
+        tk.Frame.__init__(self, parent)
+        Subscriber.__init__(self, str)
 
         self.text = tk.Text(master=self)
         self.text.pack()
 
-        self.update()
-
-    def update(self) -> None:
-        while not self.handler.queue.empty():
-            message = self.handler.queue.get()
-            self.text.insert("end", f"Received: {message}\n")
-            self.text.see("end")
-
-        # Schedule the next update
-        self.after(100, self.update)
+    def handle(self, message: str):
+        self.text.insert("end", f"Received: {message}\n")
+        self.text.see("end")

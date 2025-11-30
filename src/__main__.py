@@ -5,6 +5,7 @@ import matplotlib
 
 from window import Window
 from server import Server
+from bus import Bus
 
 matplotlib.use("TkAgg")
 
@@ -16,7 +17,12 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
-server = Server()
+bus = Bus()
+bus.add_topic("text", str)
+bus.add_topic("map", tuple)
+bus.add_topic("data", float)
+
+server = Server(bus)
 thread = threading.Thread(target=server.serve)
 logging.info("Starting server...")
 thread.start()
@@ -32,8 +38,16 @@ def on_close():
 window = Window()
 window.root.protocol("WM_DELETE_WINDOW", on_close)
 
-server.register(window.text.handler, "text")
-server.register(window.map.handler, "map")
-server.register(window.graph0.handler, "data")
+bus.subscribe("text", window.text)
+bus.subscribe("map", window.map)
+bus.subscribe("data", window.graph0)
+bus.subscribe("data", window.graph1)
 
+
+def poll_bus():
+    bus.process()
+    window.root.after(50, poll_bus)
+
+
+poll_bus()
 window.main()

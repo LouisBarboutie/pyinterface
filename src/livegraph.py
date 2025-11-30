@@ -1,22 +1,21 @@
-import logging
 from collections import deque
-from typing import List, Deque
+import logging
+from typing import List, Deque, Iterable
 
-import tkinter as tk
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.animation import FuncAnimation
+from matplotlib.artist import Artist
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+import tkinter as tk
 
-from datahandler import DataHandler
+from subscriber import Subscriber
 
 
-class LiveGraph(tk.Frame):
+class LiveGraph(tk.Frame, Subscriber):
 
-    def __init__(self, parent: tk.Misc, title: str, handler: DataHandler):
-        self.parent = parent
-        super().__init__(parent)
-
-        self.handler = handler
+    def __init__(self, parent: tk.Misc, title: str):
+        tk.Frame.__init__(self, parent)
+        Subscriber.__init__(self, float)
 
         self.figure = Figure()
         self.figure.suptitle(title)
@@ -40,23 +39,21 @@ class LiveGraph(tk.Frame):
             cache_frame_data=False,
         )
 
-    def update(self) -> None:
-        while not self.handler.queue.empty():
-            new_x = len(self.x_history)
-            new_y = self.handler.queue.get()
-
-            self.x_history.append(new_x)
-            self.y_history.append(new_y)
-
-            # Deque takes care of removing the extra elements
-            self.x_display.append(new_x)
-            self.y_display.append(new_y)
-
-    def animate(self, frame: int):
-        self.update()
+    def animate(self, frame: int) -> Iterable[Artist]:
         self.line.set_data(self.x_display, self.y_display)
 
         self.axes.relim()
         self.axes.autoscale_view()
 
         return [self.line]
+
+    def handle(self, message: float):
+        new_x = len(self.x_history)
+        new_y = message
+
+        self.x_history.append(new_x)
+        self.y_history.append(new_y)
+
+        # Deque takes care of removing the extra elements
+        self.x_display.append(new_x)
+        self.y_display.append(new_y)
