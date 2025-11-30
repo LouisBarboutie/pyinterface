@@ -18,7 +18,7 @@ class Topic(Generic[T]):
 
     def subscribe(self, subscriber: Subscriber[T]) -> None:
         """Register a new subcriber. Duplicate subscriptions have no effect."""
-        if not isinstance(subscriber.type, self.type):
+        if subscriber.type is not self.type:
             logging.warning(
                 f"Type mismatch: topic of {self.type} got incompatible subscriber of {subscriber.type}"
             )
