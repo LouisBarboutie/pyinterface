@@ -1,5 +1,6 @@
 import logging
 import threading
+from typing import Any, Mapping
 
 import matplotlib
 
@@ -9,13 +10,41 @@ from bus import Bus
 
 matplotlib.use("TkAgg")
 
-logging.basicConfig(
-    level=logging.INFO,
-    datefmt="%H:%M:%S",
-    format="[{asctime}] {levelname:<8} - {message}",
-    style="{",
-    handlers=[logging.StreamHandler()],
+
+class ColoredFormatter(logging.Formatter):
+    colors = {
+        logging.DEBUG: "\033[92m",
+        logging.INFO: "\033[0m",
+        logging.WARNING: "\033[93m",
+        logging.ERROR: "\033[91m",
+    }
+
+    def __init__(
+        self,
+        fmt: str | None = None,
+        datefmt: str | None = None,
+        style: str = "%",
+        validate: bool = True,
+        *,
+        defaults: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(fmt, datefmt, style, validate, defaults=defaults)
+
+    def format(self, record: logging.LogRecord):
+        base_format = super().format(record)
+        color = self.colors.get(record.levelno, "\033[0m")
+        return f"{color}{base_format}\033[0m"
+
+
+handler = logging.StreamHandler()
+handler.setFormatter(
+    ColoredFormatter(
+        datefmt="%H:%M:%S", fmt="[{asctime}] {levelname:<8} - {message}", style="{"
+    )
 )
+
+logging.basicConfig(level=logging.INFO, handlers=[handler])
+
 
 bus = Bus()
 bus.add_topic("text", str)
