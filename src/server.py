@@ -1,9 +1,11 @@
+from abc import ABC, abstractmethod
 import logging
 import socketserver
-from typing import Dict
+import time
+
+import serial
 
 from bus import Bus
-from datahandler import DataHandler
 
 
 class UnknownTelemetryTypeSpecifier(Exception):
@@ -50,7 +52,15 @@ class UDPHandler(socketserver.BaseRequestHandler):
         return parsed_message
 
 
-class Server:
+class Server(ABC):
+    @abstractmethod
+    def serve(self): ...
+
+    @abstractmethod
+    def shutdown(self): ...
+
+
+class UDPServer(Server):
     HOST = "localhost"
     PORT = 9999
 
@@ -59,8 +69,49 @@ class Server:
         self.server.bus = bus
 
     def serve(self):
+        logging.info("Starting UDP server...")
         self.server.serve_forever()
 
     def shutdown(self):
+        logging.info("Shutting down UDP server...")
         self.server.shutdown()
         self.server.server_close()
+
+
+class SerialServer(Server):
+    PORT = "/dev/ttyACM0"
+
+    def __init__(self, bus: Bus) -> None:
+        self.bus = bus
+        self.serial = serial.Serial()
+        self.serial.port = self.PORT
+        self.should_stop = False
+        self.buffer: bytes = b""
+
+    def serve(self) -> None:
+        logging.info("Starting serial server...")
+
+        try:
+            self.serial.open()
+        except serial.SerialException as e:
+            logging.error(f"Could not open serial port {self.serial.port}: {e}")
+            return
+
+        while not self.should_stop:
+            data = self.serial.read_all()  # Non-blocking read
+
+            if not data:
+                time.sleep(0.05)
+                continue
+
+            self.buffer += data
+
+            while b"\r\n" in self.buffer:
+                message, self.buffer = self.buffer.split(b"\r\n", maxsplit=1)
+                logging.info(f"Received packet: {message.decode()}")
+                self.bus.publish("text", message.decode())
+
+    def shutdown(self) -> None:
+        logging.info("Shutting down serial server...")
+        self.should_stop = True
+        self.serial.close()

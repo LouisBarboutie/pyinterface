@@ -5,7 +5,7 @@ from typing import Any, Mapping
 import matplotlib
 
 from window import Window
-from server import Server
+from server import SerialServer
 from bus import Bus
 
 matplotlib.use("TkAgg")
@@ -51,14 +51,13 @@ bus.add_topic("text", str)
 bus.add_topic("map", tuple)
 bus.add_topic("data", float)
 
-server = Server(bus)
+# server = Server(bus)
+server = SerialServer(bus)
 thread = threading.Thread(target=server.serve)
-logging.info("Starting server...")
 thread.start()
 
 
 def on_close():
-    logging.info("Shutting down server...")
     server.shutdown()
     thread.join()
     window.root.destroy()
