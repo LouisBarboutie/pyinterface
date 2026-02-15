@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 import logging
 import socketserver
+from typing import Optional
 import time
 
 import serial
 
 from bus import Bus
+from codec import Codec, StructCodec
 
 
 class UnknownTelemetryTypeSpecifier(Exception):
@@ -53,6 +55,12 @@ class UDPHandler(socketserver.BaseRequestHandler):
 
 
 class Server(ABC):
+    codec: Codec = StructCodec()
+
+    def __init__(self, codec: Optional[Codec] = None) -> None:
+        if codec is not None:
+            Server.codec = codec
+
     @abstractmethod
     def serve(self): ...
 
@@ -105,11 +113,20 @@ class SerialServer(Server):
                 continue
 
             self.buffer += data
+            logging.info(f"Read {len(data)} bytes into the buffer.")
+
+            if b"\r\n" not in self.buffer:
+                logging.warning("Read packet is incomplete")
+                continue
 
             while b"\r\n" in self.buffer:
+                length = len(self.buffer)
                 message, self.buffer = self.buffer.split(b"\r\n", maxsplit=1)
-                logging.info(f"Received packet: {message.decode()}")
-                self.bus.publish("text", message.decode())
+                decoded = self.codec.decode(message)
+                self.bus.publish(decoded["topic"], decoded["data"])
+                logging.info(
+                    f"Processed {len(message) + 2} out of {length} bytes in the buffer"
+                )
 
     def shutdown(self) -> None:
         logging.info("Shutting down serial server...")
