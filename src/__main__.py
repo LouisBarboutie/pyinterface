@@ -1,13 +1,10 @@
 import argparse
 import logging
-import threading
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
 import matplotlib
 
-from window import Window
-from server import SerialServer
-from bus import Bus
+from application import Application
 
 matplotlib.use("TkAgg")
 
@@ -52,40 +49,5 @@ level = logging.DEBUG if args.debug else logging.INFO
 
 logging.basicConfig(level=level, handlers=[handler])
 
-
-bus = Bus()
-bus.add_topic("text", str)
-bus.add_topic("map", tuple)
-bus.add_topic("acc_data", Sequence[float])
-bus.add_topic("gyr_data", Sequence[float])
-bus.add_topic("mag_data", Sequence[float])
-
-# server = Server(bus)
-server = SerialServer(bus)
-thread = threading.Thread(target=server.serve)
-thread.start()
-
-
-def on_close():
-    server.shutdown()
-    thread.join()
-    window.root.destroy()
-
-
-window = Window()
-window.root.protocol("WM_DELETE_WINDOW", on_close)
-
-bus.subscribe("text", window.text)
-bus.subscribe("map", window.map)
-bus.subscribe("acc_data", window.graph0)
-bus.subscribe("gyr_data", window.graph1)
-bus.subscribe("mag_data", window.graph2)
-
-
-def poll_bus():
-    bus.process()
-    window.root.after(50, poll_bus)
-
-
-poll_bus()
-window.main()
+app = Application()
+app.main()

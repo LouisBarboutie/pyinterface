@@ -3,14 +3,15 @@ import logging
 import tkinter as tk
 
 from subscriber import Subscriber
+from topictypes import TopicDataType
 
 
 class LiveText(tk.Frame, Subscriber):
 
-    def __init__(self, parent: tk.Misc):
+    def __init__(self, topic_type: TopicDataType, parent: tk.Misc):
         self.parent = parent
         tk.Frame.__init__(self, parent, bg="white")
-        Subscriber.__init__(self, str)
+        Subscriber.__init__(self, topic_type)
 
         self.text = tk.Text(master=self, relief="solid", borderwidth=1)
         self.text.pack(expand=True, fill="both", padx=10, pady=10)

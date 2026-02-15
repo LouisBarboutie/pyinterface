@@ -2,6 +2,7 @@ import logging
 from typing import Dict, Any
 
 from topic import Topic
+from topictypes import TopicDataType
 from subscriber import Subscriber
 
 
@@ -9,17 +10,17 @@ class Bus:
     """Container for topics."""
 
     def __init__(self):
-        self.topics: Dict[str, Topic[Any]] = {}
+        self.topics: Dict[TopicDataType, Topic] = {}
 
-    def add_topic(self, key: str, message_type: Any) -> None:
+    def add_topic(self, key: TopicDataType) -> None:
         """Registers a new topic on the bus."""
         if key in self.topics.keys():
             logging.warning(f"Topic {key} already registered!")
             return
-        self.topics[key] = Topic(message_type)
+        self.topics[key] = Topic(key)
         logging.debug(f"Added topic '{key}' to the message bus")
 
-    def subscribe(self, key: str, subscriber: Subscriber[Any]) -> None:
+    def subscribe(self, key: TopicDataType, subscriber: Subscriber[Any]) -> None:
         """Hook up a subscriber to the desired topic."""
         if key not in self.topics.keys():
             logging.warning(
@@ -28,14 +29,14 @@ class Bus:
             return
         self.topics[key].subscribe(subscriber)
 
-    def publish(self, key: str, message: Any) -> None:
+    def publish(self, key: TopicDataType, message: Any) -> None:
         """Push a message to a topic on the bus."""
         if key not in self.topics.keys():
             logging.warning(f"Topic {key} not registered!")
             return
 
         topic = self.topics[key]
-        if not isinstance(message, topic.type):
+        if not key == topic.type:
             logging.warning(
                 f"Type mismatch: topic '{key}' expects {topic.type}, got {type(message)}"
             )

@@ -9,12 +9,14 @@ from matplotlib.figure import Figure
 import tkinter as tk
 
 from subscriber import Subscriber
+from topictypes import TopicDataType
 
 
 class LiveGraph(tk.Frame, Subscriber[Sequence[float]]):
 
     def __init__(
         self,
+        topic_type: TopicDataType,
         parent: tk.Misc,
         title: str,
         legend: Sequence[str],
@@ -23,7 +25,7 @@ class LiveGraph(tk.Frame, Subscriber[Sequence[float]]):
         dim: int = 3,
     ) -> None:
         tk.Frame.__init__(self, parent)
-        Subscriber.__init__(self, Sequence[float])
+        Subscriber.__init__(self, topic_type)
 
         self.dimensions = dim
 

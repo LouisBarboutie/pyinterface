@@ -8,13 +8,14 @@ from mpl_toolkits.basemap import Basemap
 import tkinter as tk
 
 from subscriber import Subscriber
+from topictypes import TopicDataType
 
 
 class LiveMap(tk.Frame, Subscriber):
 
-    def __init__(self, parent: tk.Misc, title: str) -> None:
+    def __init__(self, topic_type: TopicDataType, parent: tk.Misc, title: str) -> None:
         tk.Frame.__init__(self, parent)
-        Subscriber.__init__(self, tuple)
+        Subscriber.__init__(self, topic_type)
 
         self.figure = Figure(constrained_layout=True)
         self.figure.suptitle(title)
