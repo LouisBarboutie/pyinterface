@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from collections import namedtuple
-from dataclasses import dataclass
+from datetime import datetime
 import json
+import logging
 from struct import Struct
-from typing import Dict, Callable
+from typing import Dict
 
 from messagetype import MessageType
 
@@ -25,12 +26,13 @@ class Codec(ABC):
 
 class StructCodec(Codec):
 
-    KEYS = namedtuple("DataKeys", ["type", "data"])
+    KEYS = namedtuple("DataKeys", ["topic", "type", "uptime", "data"])
     FORMATS: Dict[MessageType, Struct] = {
-        MessageType.TEXT: Struct("!BH"),  # B = type, H = string length
-        MessageType.DATA: Struct("!Bd"),  # B = type, d = data value
-        MessageType.VEC3: Struct("!B3d"),  # B = type, 3d = 3 data values
+        MessageType.TEXT: Struct("<BBBI"),  # B = type, B = topic, B = string length
+        MessageType.DATA: Struct("<BBIf"),  # B = type, B = topic, f = data value
+        MessageType.VEC3: Struct("<BBI3f"),  # B = type, B = topic, 3d = 3 data values
     }
+    TOPICS = ["text", "map", "data"]
 
     def encode(self, message: dict) -> bytes:
         message_type = MessageType(message["type"])
@@ -48,24 +50,35 @@ class StructCodec(Codec):
         return packed
 
     def decode(self, message: bytes) -> dict:
-        message_type = MessageType(message[0])
+        try:
+            message_type = MessageType(message[0])
+        except ValueError as e:
+            logging.warning(
+                f"Message type {message[0]} is invalid, message was not decoded: {e}"
+            )
+            return self.KEYS._make([None, None, None])._asdict()
+
         formatter = self.FORMATS[message_type]
 
         match message_type:
             case MessageType.TEXT:
-                _, length = formatter.unpack(message[:3])
-                if length > len(message) - 3:
-                    raise DecodeError(
-                        "Buffer length does not match header specified length"
-                    )
-                unpacked = message[3 : 3 + length].decode()
+                header_length = formatter.size
+                _, topic, payload_length, uptime = formatter.unpack(
+                    message[:header_length]
+                )
+                unpacked = (
+                    datetime.fromtimestamp(uptime / 1000).strftime("[%H:%M:%S]")
+                    + message[header_length : header_length + payload_length].decode()
+                )
             case MessageType.DATA:
-                _, unpacked = formatter.unpack(message)
+                _, topic, uptime, unpacked = formatter.unpack(message)
             case MessageType.VEC3:
-                _, x, y, z = formatter.unpack(message)
+                _, topic, uptime, x, y, z = formatter.unpack(message)
                 unpacked = [x, y, z]
 
-        return self.KEYS._make([message_type, unpacked])._asdict()
+        return self.KEYS._make(
+            [self.TOPICS[topic], message_type, uptime, unpacked]
+        )._asdict()
 
 
 class JsonCodec(Codec):
