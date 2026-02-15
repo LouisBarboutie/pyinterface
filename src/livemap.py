@@ -16,8 +16,10 @@ class LiveMap(tk.Frame, Subscriber):
         tk.Frame.__init__(self, parent)
         Subscriber.__init__(self, tuple)
 
-        self.figure = Figure()
+        self.figure = Figure(constrained_layout=True)
         self.figure.suptitle(title)
+        self.figure.get_layout_engine().set(w_pad=0.2, h_pad=0.2)
+
         self.axes = self.figure.subplots()
         self.axes.set_aspect("equal")
 
@@ -40,7 +42,9 @@ class LiveMap(tk.Frame, Subscriber):
         self.line = self.axes.plot(self.x_history, self.y_history, marker="o")[0]
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self)
-        self.canvas.get_tk_widget().grid(column=0, row=0)
+        self.canvas.get_tk_widget().grid(column=0, row=0, sticky="nsew")
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
         self.animation = FuncAnimation(
             self.figure,

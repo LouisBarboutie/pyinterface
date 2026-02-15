@@ -49,7 +49,11 @@ class LiveGraph(tk.Frame, Subscriber[Sequence[float]]):
         self.axes.legend(legend, loc="upper left")
 
         self.canvas = FigureCanvasTkAgg(self.figure, master=self)
-        self.canvas.get_tk_widget().grid(column=0, row=0)
+        self.canvas.get_tk_widget().grid(column=0, row=0, sticky="nsew")
+
+        # Required for dynamic resizing
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
         self.animation = FuncAnimation(
             self.figure,

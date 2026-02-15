@@ -1,11 +1,10 @@
 import argparse
 import logging
 import threading
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 import matplotlib
 
-from messagetype import MessageType
 from window import Window
 from server import SerialServer
 from bus import Bus
@@ -57,7 +56,9 @@ logging.basicConfig(level=level, handlers=[handler])
 bus = Bus()
 bus.add_topic("text", str)
 bus.add_topic("map", tuple)
-bus.add_topic("data", float)
+bus.add_topic("acc_data", Sequence[float])
+bus.add_topic("gyr_data", Sequence[float])
+bus.add_topic("mag_data", Sequence[float])
 
 # server = Server(bus)
 server = SerialServer(bus)
@@ -76,8 +77,9 @@ window.root.protocol("WM_DELETE_WINDOW", on_close)
 
 bus.subscribe("text", window.text)
 bus.subscribe("map", window.map)
-bus.subscribe("data", window.graph0)
-bus.subscribe("data", window.graph1)
+bus.subscribe("acc_data", window.graph0)
+bus.subscribe("gyr_data", window.graph1)
+bus.subscribe("mag_data", window.graph2)
 
 
 def poll_bus():

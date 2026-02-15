@@ -1,3 +1,5 @@
+import logging
+
 import tkinter as tk
 
 from subscriber import Subscriber
@@ -7,12 +9,13 @@ class LiveText(tk.Frame, Subscriber):
 
     def __init__(self, parent: tk.Misc):
         self.parent = parent
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg="white")
         Subscriber.__init__(self, str)
 
-        self.text = tk.Text(master=self)
-        self.text.pack()
+        self.text = tk.Text(master=self, relief="solid", borderwidth=1)
+        self.text.pack(expand=True, fill="both", padx=10, pady=10)
 
     def handle(self, message: str):
-        self.text.insert("end", f"Received: {message}\n")
+        logging.debug(f"Received message {message}")
+        self.text.insert("end", f"{message}\n")
         self.text.see("end")
