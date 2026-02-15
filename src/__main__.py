@@ -1,14 +1,20 @@
+import argparse
 import logging
 import threading
 from typing import Any, Mapping
 
 import matplotlib
 
+from messagetype import MessageType
 from window import Window
 from server import SerialServer
 from bus import Bus
 
 matplotlib.use("TkAgg")
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--debug", action="store_true", default=False)
+args = parser.parse_args()
 
 
 class ColoredFormatter(logging.Formatter):
@@ -43,7 +49,9 @@ handler.setFormatter(
     )
 )
 
-logging.basicConfig(level=logging.INFO, handlers=[handler])
+level = logging.DEBUG if args.debug else logging.INFO
+
+logging.basicConfig(level=level, handlers=[handler])
 
 
 bus = Bus()
