@@ -1,19 +1,17 @@
 import logging
-from typing import Dict, TypeVar, Generic, Type
+from typing import Dict, Any
 
 from topic import Topic
 from subscriber import Subscriber
 
-T = TypeVar("T")
 
-
-class Bus(Generic[T]):
+class Bus:
     """Container for topics."""
 
     def __init__(self):
-        self.topics: Dict[str, Topic[T]] = {}
+        self.topics: Dict[str, Topic[Any]] = {}
 
-    def add_topic(self, key: str, message_type: Type[T]) -> None:
+    def add_topic(self, key: str, message_type: Any) -> None:
         """Registers a new topic on the bus."""
         if key in self.topics.keys():
             logging.warning(f"Topic {key} already registered!")
@@ -21,7 +19,7 @@ class Bus(Generic[T]):
         self.topics[key] = Topic(message_type)
         logging.debug(f"Added topic '{key}' to the message bus")
 
-    def subscribe(self, key: str, subscriber: Subscriber[T]) -> None:
+    def subscribe(self, key: str, subscriber: Subscriber[Any]) -> None:
         """Hook up a subscriber to the desired topic."""
         if key not in self.topics.keys():
             logging.warning(
@@ -30,7 +28,7 @@ class Bus(Generic[T]):
             return
         self.topics[key].subscribe(subscriber)
 
-    def publish(self, key: str, message: T) -> None:
+    def publish(self, key: str, message: Any) -> None:
         """Push a message to a topic on the bus."""
         if key not in self.topics.keys():
             logging.warning(f"Topic {key} not registered!")
