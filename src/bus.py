@@ -19,6 +19,7 @@ class Bus(Generic[T]):
             logging.warning(f"Topic {key} already registered!")
             return
         self.topics[key] = Topic(message_type)
+        logging.debug(f"Added topic '{key}' to the message bus")
 
     def subscribe(self, key: str, subscriber: Subscriber[T]) -> None:
         """Hook up a subscriber to the desired topic."""
@@ -38,9 +39,10 @@ class Bus(Generic[T]):
         topic = self.topics[key]
         if not isinstance(message, topic.type):
             logging.warning(
-                f"Type mismatch: topic expects {topic.type}, got {type(message)}"
+                f"Type mismatch: topic '{key}' expects {topic.type}, got {type(message)}"
             )
         topic.publish(message)
+        logging.debug(f"Published message '{message}' to topic '{key}'")
 
     def process(self) -> None:
         """Update all topics to notify their subscribers with the latest messages."""
