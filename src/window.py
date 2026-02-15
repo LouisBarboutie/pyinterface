@@ -11,6 +11,9 @@ class Window:
         self.root = tk.Tk()
         self.root.title("Animation Test")
 
+        self.menu = Menu(self.root)
+        self.root.config(menu=self.menu)
+
         self.frame = tk.Frame(self.root)
         self.frame.grid()
 
