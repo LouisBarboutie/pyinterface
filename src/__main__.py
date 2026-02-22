@@ -4,7 +4,7 @@ from typing import Any, Mapping
 
 import matplotlib
 
-from application import Application
+from src.application import Application
 
 matplotlib.use("TkAgg")
 

@@ -6,8 +6,8 @@ import time
 
 import serial
 
-from bus import Bus
-from codec import Codec, StructCodec
+from src.pubsub.bus import Bus
+from src.network.codec import Codec, StructCodec
 
 
 class UnknownTelemetryTypeSpecifier(Exception):

@@ -1,9 +1,9 @@
 import logging
 import threading
 
-from window import Window
-from server import SerialServer
-from bus import Bus, TopicDataType
+from src.window import Window
+from src.network.server import SerialServer
+from src.pubsub.bus import Bus, TopicDataType
 
 
 class Application:
@@ -42,7 +42,7 @@ class Application:
         self.window.main()
 
     def start_server(self):
-        logging.info("Stopping server...")
+        logging.info("Starting server...")
         self.thread = threading.Thread(target=self.server.serve)
         self.thread.start()
 

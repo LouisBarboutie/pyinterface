@@ -2,8 +2,8 @@ import logging
 from queue import Queue
 from typing import Set, Any
 
-from subscriber import Subscriber
-from topictypes import TopicDataType
+from src.pubsub.subscriber import Subscriber
+from src.pubsub.topictypes import TopicDataType
 
 
 class Topic:

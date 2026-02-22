@@ -8,8 +8,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import tkinter as tk
 
-from subscriber import Subscriber
-from topictypes import TopicDataType
+from src.pubsub.subscriber import Subscriber
+from src.pubsub.topictypes import TopicDataType
 
 
 class LiveGraph(tk.Frame, Subscriber[Sequence[float]]):

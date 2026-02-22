@@ -1,10 +1,10 @@
 import random
 import time
 
-from application import Application
-from server import Server
-from bus import Bus
-from topictypes import TopicDataType
+from src.application import Application
+from src.network.server import Server
+from src.pubsub.bus import Bus
+from src.pubsub.topictypes import TopicDataType
 
 
 class FakeServer(Server):

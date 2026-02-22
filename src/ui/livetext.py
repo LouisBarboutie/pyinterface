@@ -2,8 +2,8 @@ import logging
 
 import tkinter as tk
 
-from subscriber import Subscriber
-from topictypes import TopicDataType
+from src.pubsub.subscriber import Subscriber
+from src.pubsub.topictypes import TopicDataType
 
 
 class LiveText(tk.Frame, Subscriber):

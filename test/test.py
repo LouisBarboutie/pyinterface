@@ -1,12 +1,21 @@
 import tkinter as tk
-from livegraph import LiveGraph
+
+from src import ui
+from src.ui.livegraph import LiveGraph
+from src.pubsub.topictypes import TopicDataType
 import random
 
 dims: int = 3
 
 root = tk.Tk()
 graph = LiveGraph(
-    root, "test", ["1", "2", "3"], "Field strength [Gauss]", "time [pts]", dims
+    TopicDataType.MAG_DATA,
+    root,
+    "test",
+    ["1", "2", "3"],
+    "Field strength [Gauss]",
+    "time [pts]",
+    dims,
 )
 graph.pack()
 

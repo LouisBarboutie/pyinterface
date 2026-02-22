@@ -1,10 +1,10 @@
 import tkinter as tk
 
-from livegraph import LiveGraph
-from livemap import LiveMap
-from livetext import LiveText
-from menu import Menu
-from topictypes import TopicDataType
+from src.ui.livegraph import LiveGraph
+from src.ui.livemap import LiveMap
+from src.ui.livetext import LiveText
+from src.ui.menu import Menu
+from src.pubsub.topictypes import TopicDataType
 
 
 class Window:

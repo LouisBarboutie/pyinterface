@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, Type, TypeVar
 
-from topictypes import TopicDataType
+from src.pubsub.topictypes import TopicDataType
 
 T = TypeVar("T")
 

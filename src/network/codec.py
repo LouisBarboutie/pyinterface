@@ -6,7 +6,7 @@ import logging
 from struct import Struct
 from typing import Dict
 
-from messagetype import MessageType
+from src.network.messagetype import MessageType
 
 
 class DecodeError(Exception):
