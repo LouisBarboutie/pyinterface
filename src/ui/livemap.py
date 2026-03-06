@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable, List, Type
 
 from matplotlib.animation import FuncAnimation
 from matplotlib.artist import Artist
@@ -8,12 +8,11 @@ from mpl_toolkits.basemap import Basemap
 import tkinter as tk
 
 from src.pubsub.subscriber import Subscriber
-from src.pubsub.topictypes import TopicDataType
 
 
 class LiveMap(tk.Frame, Subscriber):
 
-    def __init__(self, topic_type: TopicDataType, parent: tk.Misc, title: str) -> None:
+    def __init__(self, topic_type: Type, parent: tk.Misc, title: str) -> None:
         tk.Frame.__init__(self, parent)
         Subscriber.__init__(self, topic_type)
 

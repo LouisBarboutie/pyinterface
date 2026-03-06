@@ -89,15 +89,18 @@ class UDPServer(Server):
 class SerialServer(Server):
     PORT = "/dev/ttyACM0"
 
-    def __init__(self, bus: Bus) -> None:
-        self.bus = bus
-        self.serial = serial.Serial()
+    def __init__(self, bus: Bus, delay: float = 0.05) -> None:
+        self.bus: Bus = bus
+        self.serial: serial.Serial = serial.Serial()
         self.serial.port = self.PORT
-        self.should_stop = False
+        self.serial.baudrate = 115200
+        self.should_stop: bool = False
         self.buffer: bytes = b""
+        self.delay: float = delay
 
     def serve(self) -> None:
         logging.info("Starting serial server...")
+        self.should_stop = False
 
         try:
             self.serial.open()
@@ -106,14 +109,19 @@ class SerialServer(Server):
             return
 
         while not self.should_stop:
-            data = self.serial.read_all()  # Non-blocking read
+            try:
+                data = self.serial.read_all()  # Non-blocking read
+            except OSError as e:
+                logging.error(f"Reading of the serial port failed: {e}")
+                self.shutdown()
+                return
 
             if not data:
-                time.sleep(0.05)
+                time.sleep(self.delay)
                 continue
 
             self.buffer += data
-            logging.info(f"Read {len(data)} bytes into the buffer.")
+            logging.debug(f"Read {len(data)} bytes into the buffer.")
 
             if b"\r\n" not in self.buffer:
                 logging.warning("Read packet is incomplete")
@@ -124,7 +132,7 @@ class SerialServer(Server):
                 message, self.buffer = self.buffer.split(b"\r\n", maxsplit=1)
                 decoded = self.codec.decode(message)
                 self.bus.publish(decoded["topic"], decoded["data"])
-                logging.info(
+                logging.debug(
                     f"Processed {len(message) + 2} out of {length} bytes in the buffer"
                 )
 

@@ -1,14 +1,14 @@
 import logging
+from typing import Type
 
 import tkinter as tk
 
 from src.pubsub.subscriber import Subscriber
-from src.pubsub.topictypes import TopicDataType
 
 
 class LiveText(tk.Frame, Subscriber):
 
-    def __init__(self, topic_type: TopicDataType, parent: tk.Misc):
+    def __init__(self, topic_type: Type, parent: tk.Misc):
         self.parent = parent
         tk.Frame.__init__(self, parent, bg="white")
         Subscriber.__init__(self, topic_type)

@@ -4,7 +4,7 @@ import time
 from src.application import Application
 from src.network.server import Server
 from src.pubsub.bus import Bus
-from src.pubsub.topictypes import TopicDataType
+from src.pubsub.topictypes import TopicId
 
 
 class FakeServer(Server):
@@ -14,15 +14,9 @@ class FakeServer(Server):
 
     def serve(self):
         while not self.should_stop:
-            self.bus.publish(
-                TopicDataType.ACC_DATA, [random.random() for i in range(3)]
-            )
-            self.bus.publish(
-                TopicDataType.GYR_DATA, [random.random() for i in range(3)]
-            )
-            self.bus.publish(
-                TopicDataType.MAG_DATA, [random.random() for i in range(3)]
-            )
+            self.bus.publish(TopicId.ACC_DATA, [random.random() for _ in range(3)])
+            self.bus.publish(TopicId.GYR_DATA, [random.random() for _ in range(3)])
+            self.bus.publish(TopicId.MAG_DATA, [random.random() for _ in range(3)])
             time.sleep(0.001)
 
     def shutdown(self):

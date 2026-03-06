@@ -4,7 +4,7 @@ from src.ui.livegraph import LiveGraph
 from src.ui.livemap import LiveMap
 from src.ui.livetext import LiveText
 from src.ui.menu import Menu
-from src.pubsub.topictypes import TopicDataType
+from src.pubsub.topictypes import TopicId, TOPIC_DATA_TYPES
 
 
 class Window:
@@ -30,7 +30,7 @@ class Window:
 
         # Widget creation
         self.graph0 = LiveGraph(
-            TopicDataType.ACC_DATA,
+            TOPIC_DATA_TYPES[TopicId.ACC_DATA],
             data_frame,
             "Accelerometer",
             ["x", "y", "z"],
@@ -38,7 +38,7 @@ class Window:
             "Acceleration [m/s^2]",
         )
         self.graph1 = LiveGraph(
-            TopicDataType.GYR_DATA,
+            TOPIC_DATA_TYPES[TopicId.GYR_DATA],
             data_frame,
             "Gyrometer",
             ["x", "y", "z"],
@@ -46,15 +46,15 @@ class Window:
             "Angular rate [rad/s]",
         )
         self.graph2 = LiveGraph(
-            TopicDataType.MAG_DATA,
+            TOPIC_DATA_TYPES[TopicId.MAG_DATA],
             data_frame,
             "Magnetometer",
             ["x", "y", "z"],
             "Time [pts]",
             "Field strength [Gauss]",
         )
-        self.map = LiveMap(TopicDataType.GEO_DATA, info_frame, "My LiveMap")
-        self.text = LiveText(TopicDataType.TEXT, info_frame)
+        self.map = LiveMap(TOPIC_DATA_TYPES[TopicId.GEO_DATA], info_frame, "My LiveMap")
+        self.text = LiveText(TOPIC_DATA_TYPES[TopicId.TEXT], info_frame)
 
         # Widget positioning
         self.graph0.grid(column=0, row=0, sticky="nsew")

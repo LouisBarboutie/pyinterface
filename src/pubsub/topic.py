@@ -1,16 +1,15 @@
 import logging
 from queue import Queue
-from typing import Set, Any
+from typing import Set, Any, Type
 
 from src.pubsub.subscriber import Subscriber
-from src.pubsub.topictypes import TopicDataType
 
 
 class Topic:
     """Specialized message broker."""
 
-    def __init__(self, message_type: TopicDataType) -> None:
-        self.type: type = message_type
+    def __init__(self, message_type: Type) -> None:
+        self.type: Type = message_type
         self.subscribers: Set[Subscriber[Any]] = set()
         self.queue: Queue[Any] = Queue()
 
@@ -25,10 +24,6 @@ class Topic:
 
     def publish(self, message: Any) -> None:
         """Publish a message to this topic."""
-        # if not isinstance(message, self.type):
-        # logging.warning(
-        # f"Type mismatch: topic expects messages of {self.type}, got {type(message)}"
-        # )
         self.queue.put(message)
 
     def notify(self) -> None:

@@ -1,6 +1,6 @@
 from collections import deque
 import logging
-from typing import List, Deque, Iterable, Sequence
+from typing import List, Deque, Iterable, Sequence, Type
 
 from matplotlib.animation import FuncAnimation
 from matplotlib.artist import Artist
@@ -9,14 +9,13 @@ from matplotlib.figure import Figure
 import tkinter as tk
 
 from src.pubsub.subscriber import Subscriber
-from src.pubsub.topictypes import TopicDataType
 
 
 class LiveGraph(tk.Frame, Subscriber[Sequence[float]]):
 
     def __init__(
         self,
-        topic_type: TopicDataType,
+        topic_type: Type,
         parent: tk.Misc,
         title: str,
         legend: Sequence[str],
@@ -42,8 +41,10 @@ class LiveGraph(tk.Frame, Subscriber[Sequence[float]]):
         self.x_history: List[float] = []
         self.y_history: List[List[float]] = [[] for _ in range(dim)]
 
-        self.x_display: Deque[float] = deque(maxlen=25)
-        self.y_display: List[Deque[float]] = [deque(maxlen=25) for _ in range(dim)]
+        self.x_display: Sequence[int] = range(-25, 0)
+        self.y_display: List[Deque[float]] = [
+            deque([0] * 25, maxlen=25) for _ in range(dim)
+        ]
 
         self.lines = [
             self.axes.plot(self.x_display, y, marker="o")[0] for y in self.y_display
@@ -58,19 +59,17 @@ class LiveGraph(tk.Frame, Subscriber[Sequence[float]]):
         self.grid_columnconfigure(0, weight=1)
 
         self.animation = FuncAnimation(
-            self.figure,
-            self.animate,
-            interval=10,
-            cache_frame_data=False,
+            self.figure, self.animate, interval=10, cache_frame_data=False
         )
 
     def animate(self, frame: int) -> Iterable[Artist]:
-        self.canvas.draw_idle()
         for line, data in zip(self.lines, self.y_display):
             line.set_data(self.x_display, data)
 
-        self.axes.relim()
-        self.axes.autoscale_view()
+        if frame % 10 == 0:
+            self.axes.relim()
+            self.axes.autoscale_view(scalex=False)
+            self.canvas.draw_idle()
 
         return self.lines
 
@@ -83,7 +82,6 @@ class LiveGraph(tk.Frame, Subscriber[Sequence[float]]):
 
         new_x = len(self.x_history)
         self.x_history.append(new_x)
-        self.x_display.append(new_x)
 
         for history, display, new in zip(self.y_history, self.y_display, message):
             history.append(new)
